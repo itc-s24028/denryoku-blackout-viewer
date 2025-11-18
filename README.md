@@ -1,3 +1,7 @@
+# 検討中の機能
+- NextJSのpluginを活用したマップビューアーの使用を選ぶ
+- 東京電力の停電個数が取得できないため、代替案を検討
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
