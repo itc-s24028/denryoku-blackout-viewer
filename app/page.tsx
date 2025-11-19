@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 
 // 停電情報のサンプルデータ
 const outageData = [
@@ -44,86 +43,95 @@ const outageData = [
   },
 ];
 
-export default function Home() {
-  const mapRef = useRef<L.Map | null>(null);
+// 地図コンポーネント（動的インポート用）
+function MapComponent() {
+  const mapRef = useRef<any>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !mapContainerRef.current || mapRef.current) return;
 
-    // 地図の初期化
-    const map = L.map(mapContainerRef.current).setView([35.6812, 139.7671], 10);
-    mapRef.current = map;
+    // 動的にLeafletをインポート
+    import('leaflet').then((L) => {
+      // Leaflet CSSを動的にインポート
+      import('leaflet/dist/leaflet.css');
 
-    // OpenStreetMapタイルレイヤーの追加
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(map);
+      if (!mapContainerRef.current || mapRef.current) return;
 
-    // カスタムアイコンの作成
-    const createIcon = (status: string) => {
-      const color = status === '復旧済み' ? '#22c55e' :
-        status === '復旧作業中' ? '#f59e0b' : '#ef4444';
+      // 地図の初期化
+      const map = L.map(mapContainerRef.current).setView([35.6812, 139.7671], 10);
+      mapRef.current = map;
 
-      return L.divIcon({
-        className: 'custom-icon',
-        html: `<div style="
-          background-color: ${color};
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-        ">⚡</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-      });
-    };
-
-    // 停電情報マーカーの追加
-    outageData.forEach((outage) => {
-      const marker = L.marker([outage.lat, outage.lng], {
-        icon: createIcon(outage.status),
+      // OpenStreetMapタイルレイヤーの追加
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
       }).addTo(map);
 
-      // ポップアップの内容
-      marker.bindPopup(`
-        <div style="min-width: 220px; font-family: system-ui, -apple-system, sans-serif;">
-          <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
-            📍 ${outage.location}
-          </h3>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <p style="margin: 0; display: flex; justify-content: space-between;">
-              <strong style="color: #6b7280;">影響戸数:</strong> 
-              <span style="color: #1f2937;">約${outage.affectedHouses}戸</span>
-            </p>
-            <p style="margin: 0; display: flex; justify-content: space-between; align-items: center;">
-              <strong style="color: #6b7280;">状態:</strong> 
-              <span style="
-                padding: 3px 10px;
-                border-radius: 12px;
-                font-size: 13px;
-                font-weight: 600;
-                background-color: ${outage.status === '復旧済み' ? '#dcfce7' :
-          outage.status === '復旧作業中' ? '#fef3c7' : '#fee2e2'};
-                color: ${outage.status === '復旧済み' ? '#16a34a' :
-          outage.status === '復旧作業中' ? '#d97706' : '#dc2626'};
-              ">
-                ${outage.status}
-              </span>
-            </p>
-            <p style="margin: 0; display: flex; justify-content: space-between;">
-              <strong style="color: #6b7280;">復旧予定:</strong> 
-              <span style="color: #1f2937;">${outage.estimatedRecovery}</span>
-            </p>
+      // カスタムアイコンの作成
+      const createIcon = (status: string) => {
+        const color = status === '復旧済み' ? '#22c55e' :
+          status === '復旧作業中' ? '#f59e0b' : '#ef4444';
+
+        return L.divIcon({
+          className: 'custom-icon',
+          html: `<div style="
+            background-color: ${color};
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+          ">⚡</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
+      };
+
+      // 停電情報マーカーの追加
+      outageData.forEach((outage) => {
+        const marker = L.marker([outage.lat, outage.lng], {
+          icon: createIcon(outage.status),
+        }).addTo(map);
+
+        // ポップアップの内容
+        marker.bindPopup(`
+          <div style="min-width: 220px; font-family: system-ui, -apple-system, sans-serif;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+              📍 ${outage.location}
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <p style="margin: 0; display: flex; justify-content: space-between;">
+                <strong style="color: #6b7280;">影響戸数:</strong> 
+                <span style="color: #1f2937;">約${outage.affectedHouses}戸</span>
+              </p>
+              <p style="margin: 0; display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #6b7280;">状態:</strong> 
+                <span style="
+                  padding: 3px 10px;
+                  border-radius: 12px;
+                  font-size: 13px;
+                  font-weight: 600;
+                  background-color: ${outage.status === '復旧済み' ? '#dcfce7' :
+            outage.status === '復旧作業中' ? '#fef3c7' : '#fee2e2'};
+                  color: ${outage.status === '復旧済み' ? '#16a34a' :
+            outage.status === '復旧作業中' ? '#d97706' : '#dc2626'};
+                ">
+                  ${outage.status}
+                </span>
+              </p>
+              <p style="margin: 0; display: flex; justify-content: space-between;">
+                <strong style="color: #6b7280;">復旧予定:</strong> 
+                <span style="color: #1f2937;">${outage.estimatedRecovery}</span>
+              </p>
+            </div>
           </div>
-        </div>
-      `);
+        `);
+      });
     });
 
     // クリーンアップ
@@ -135,6 +143,28 @@ export default function Home() {
     };
   }, []);
 
+  return <div ref={mapContainerRef} style={{ flex: 1 }} />;
+}
+
+// SSRを無効化して地図コンポーネントを動的インポート
+const DynamicMap = dynamic(() => Promise.resolve(MapComponent), {
+  ssr: false,
+  loading: () => (
+    <div style={{
+      flex: 1,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#f3f4f6',
+      fontSize: '16px',
+      color: '#6b7280'
+    }}>
+      🗺️ 地図を読み込み中...
+    </div>
+  ),
+});
+
+export default function Home() {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* ヘッダー */}
@@ -197,8 +227,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 地図 */}
-      <div ref={mapContainerRef} style={{ flex: 1 }} />
+      {/* 地図（動的インポート） */}
+      <DynamicMap />
 
       {/* フッター */}
       <footer style={{
