@@ -54,7 +54,7 @@ function MapComponent() {
     // 動的にLeafletをインポート
     import('leaflet').then((L) => {
       // Leaflet CSSを動的にインポート
-      import('leaflet/dist/leaflet.css');
+      import('leaflet/dist/leaflet.css' as any);
 
       if (!mapContainerRef.current || mapRef.current) return;
 
