@@ -1,6 +1,8 @@
-# 検討中の機能
-- NextJSのpluginを活用したマップビューアーの使用を選ぶ
-- 東京電力の停電個数が取得できないため、代替案を検討
+# 停電情報マップビューアー
+- leafletを活用した停電情報を表示するマップビューアー
+
+## 今後実装したい機能
+- 実際の電力会社からの情報を取得させたい
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
