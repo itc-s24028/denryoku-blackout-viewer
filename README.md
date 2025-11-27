@@ -3,6 +3,7 @@
 
 ## 今後実装したい機能
 - 実際の電力会社からの情報を取得させたい
+- マップにピンを指す形式から停電戸数に合わせて、市町村に色を塗るようにしたい
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
